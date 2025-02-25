@@ -307,12 +307,28 @@
       "Your smile is my daily vitamin ♥"
     ];
 
-    // Load saved data on startup
+    // Function to reset taken status if the date has changed
+    function resetTakenStatusIfNewDay() {
+      const today = new Date().toDateString();
+      const lastResetDate = localStorage.getItem('lastResetDate');
+
+      if (lastResetDate !== today) {
+        medications.forEach(pill => {
+          pill.taken = false;
+        });
+        localStorage.setItem('lastResetDate', today);
+        saveData();
+        renderMedications();
+      }
+    }
+
+    // Load saved data on startup and reset taken status if it's a new day
     window.onload = function () {
       renderCalendar();
       const savedData = localStorage.getItem('pillTrackerData');
       if (savedData) {
         medications = JSON.parse(savedData);
+        resetTakenStatusIfNewDay(); // Reset taken status if it's a new day
         renderMedications();
       }
       displayRandomLoveMessage();
