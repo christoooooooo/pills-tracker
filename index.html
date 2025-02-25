@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Love & Care Pill Reminder</title>
+  <style>
+    :root {
+      --primary: #ff6b6b;
+      --primary-light: #ff8787;
+      --primary-dark: #fa5252;
+      --success: #74c0fc;
+      --danger: #ff6b6b;
+      --light: #fff0f3;
+      --dark: #343a40;
+      --gray: #868e96;
+      --shadow: 0 4px 12px rgba(255, 107, 107, 0.2);
+      --radius: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #fff5f7;
+      color: var(--dark);
+      line-height: 1.6;
+      padding: 20px;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><path fill="%23ffccd5" fill-opacity="0.3" d="M10 17.8c-.3 0-.5-.1-.7-.3L2.9 11c-2-1.9-2-5.1 0-7.1.9-1 2.2-1.5 3.5-1.5s2.6.5 3.5 1.5l.1.1.1-.1C11 2.9 12.3 2.4 13.6 2.4s2.6.5 3.5 1.5c2 1.9 2 5.1 0 7.1l-6.4 6.5c-.2.2-.4.3-.7.3z"/></svg>');
+    }
+
+    .app-container {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: white;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      border: 1px solid #fcc2d7;
+    }
+
+    .app-header {
+      background: linear-gradient(135deg, #ff8787, #ffa8a8);
+      color: white;
+      padding: 25px;
+      text-align: center;
+      position: relative;
+    }
+
+    .app-title {
+      margin: 0;
+      font-size: 1.8rem;
+      font-weight: 600;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .app-subtitle {
+      font-size: 1rem;
+      opacity: 0.9;
+      margin-top: 5px;
+    }
+
+    .heart-icon {
+      font-size: 1.2rem;
+      margin: 0 5px;
+    }
+
+    .calendar-bar {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px;
+      background-color: var(--light);
+      border-bottom: 1px solid #fcc2d7;
+    }
+
+    .calendar-day {
+      text-align: center;
+      font-size: 0.9rem;
+      color: var(--gray);
+      padding: 8px;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .calendar-day.active {
+      color: white;
+      font-weight: 600;
+      background-color: var(--primary);
+    }
+
+    .add-form {
+      display: flex;
+      gap: 10px;
+      padding: 20px;
+      background-color: var(--light);
+      border-bottom: 1px solid #ffe3e3;
+    }
+
+    .form-input {
+      flex: 1;
+      padding: 12px 15px;
+      border: 1px solid #fcc2d7;
+      border-radius: 20px;
+      font-size: 1rem;
+      background-color: white;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.25);
+    }
+
+    .btn {
+      padding: 12px 18px;
+      border: none;
+      border-radius: 20px;
+      background-color: var(--primary);
+      color: white;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 5px rgba(255, 107, 107, 0.3);
+    }
+
+    .btn:hover {
+      background-color: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+
+    .medication-list {
+      padding: 20px;
+    }
+
+    .medication-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px;
+      margin-bottom: 15px;
+      background-color: white;
+      border: 1px solid #ffd8e3;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      transition: all 0.2s ease;
+    }
+
+    .medication-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(255, 107, 107, 0.25);
+    }
+
+    .medication-name {
+      font-weight: 600;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+    }
+
+    .medication-name::before {
+      content: "♥";
+      margin-right: 8px;
+      color: var(--primary);
+    }
+
+    .medication-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    .checkbox-label input {
+      width: 0;
+      height: 0;
+      position: absolute;
+      opacity: 0;
+    }
+
+    .custom-checkbox {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 2px solid var(--primary-light);
+      display: inline-block;
+      position: relative;
+      transition: all 0.2s ease;
+    }
+
+    .checkbox-label input:checked + .custom-checkbox {
+      background-color: var(--primary);
+      border-color: var(--primary);
+    }
+
+    .checkbox-label input:checked + .custom-checkbox::after {
+      content: "❤";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: white;
+      font-size: 0.75rem;
+    }
+
+    .delete-btn {
+      background-color: transparent;
+      color: var(--gray);
+      border: none;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .delete-btn:hover {
+      color: var(--danger);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 30px;
+      color: var(--gray);
+    }
+
+    .empty-icon {
+      font-size: 3rem;
+      margin-bottom: 15px;
+      color: #ffa8a8;
+    }
+
+    .love-note {
+      text-align: center;
+      padding: 15px;
+      font-size: 0.9rem;
+      color: var(--gray);
+      background-color: var(--light);
+      border-top: 1px solid #ffe3e3;
+    }
+
+    .love-message {
+      font-style: italic;
+      color: var(--primary-dark);
+      margin-top: 5px;
+    }
+
+    @media (max-width: 480px) {
+      .add-form {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <header class="app-header">
+      <h1 class="app-title">
+        Pills tracker for my soulmate, Fatoom.♡
+      </h1>
+      <p class="app-subtitle">Because your health is my priority</p>
+    </header>
+
+    <div class="calendar-bar" id="calendarBar">
+      <!-- Calendar days will be added here -->
+    </div>
+
+    <div class="add-form">
+      <input type="text" id="medicationName" class="form-input" placeholder="Enter your medicine name, sweetheart" required>
+      <button class="btn" onclick="addPill()">Add</button>
+    </div>
+
+    <div class="medication-list" id="medicationList">
+      <!-- Pills will be added here -->
+    </div>
+
+    <div class="love-note">
+      <p>Every pill you take is a step toward our future together</p>
+      <p class="love-message" id="loveMessage"></p>
+    </div>
+  </div>
+
+  <script>
+    let medications = [];
+    const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const loveMessages = [
+      "Taking care of you is my favorite hobby ♥",
+      "Your health is our greatest treasure ♥",
+      "I love you more with every passing day ♥",
+      "You make my heart skip a beat, Fatoom ♥",
+      "Remember to take your pills, my love ♥",
+      "You're the medicine my heart needed ♥",
+      "Every moment with you is precious ♥",
+      "Your smile is my daily vitamin ♥"
+    ];
+
+    // Load saved data on startup
+    window.onload = function () {
+      renderCalendar();
+      const savedData = localStorage.getItem('pillTrackerData');
+      if (savedData) {
+        medications = JSON.parse(savedData);
+        renderMedications();
+      }
+      displayRandomLoveMessage();
+    };
+
+    function displayRandomLoveMessage() {
+      const messageElement = document.getElementById('loveMessage');
+      const randomIndex = Math.floor(Math.random() * loveMessages.length);
+      messageElement.textContent = loveMessages[randomIndex];
+    }
+
+    // Render the calendar bar
+    function renderCalendar() {
+      const calendarBar = document.getElementById('calendarBar');
+      calendarBar.innerHTML = daysOfWeek
+        .map(
+          (day) =>
+            `<div class="calendar-day ${
+              new Date().getDay() === daysOfWeek.indexOf(day) ? 'active' : ''
+            }">${day}</div>`
+        )
+        .join('');
+    }
+
+    // Add a new pill
+    function addPill() {
+      const nameInput = document.getElementById('medicationName');
+      const name = nameInput.value.trim();
+
+      if (name) {
+        const newPill = {
+          id: Date.now().toString(),
+          name: name,
+          taken: false,
+          date: new Date().toISOString(),
+        };
+        medications.push(newPill);
+        nameInput.value = '';
+        renderMedications();
+        saveData();
+        displayRandomLoveMessage();
+      }
+    }
+
+    // Toggle pill status
+    function togglePillStatus(id) {
+      const pill = medications.find((p) => p.id === id);
+      if (pill) {
+        pill.taken = !pill.taken;
+        saveData();
+        renderMedications();
+      }
+    }
+
+    // Delete a pill
+    function deletePill(id) {
+      if (confirm('Are you sure you want to remove this medicine, my love?')) {
+        medications = medications.filter((p) => p.id !== id);
+        renderMedications();
+        saveData();
+      }
+    }
+
+    // Render the pill list
+    function renderMedications() {
+      const listContainer = document.getElementById('medicationList');
+      if (medications.length === 0) {
+        listContainer.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">💕</div>
+            <h3>No medications added yet</h3>
+            <p>I'll help you remember your meds, my love</p>
+          </div>
+        `;
+        return;
+      }
+
+      listContainer.innerHTML = medications
+        .map(
+          (pill) => `
+          <div class="medication-item">
+            <div class="medication-name">${pill.name}</div>
+            <div class="medication-actions">
+              <label class="checkbox-label">
+                <input type="checkbox" ${
+                  pill.taken ? 'checked' : ''
+                } onchange="togglePillStatus('${pill.id}')">
+                <span class="custom-checkbox"></span>
+                Taken
+              </label>
+              <button class="delete-btn" onclick="deletePill('${pill.id}')">✕</button>
+            </div>
+          </div>
+        `
+        )
+        .join('');
+    }
+
+    // Save data to localStorage
+    function saveData() {
+      localStorage.setItem('pillTrackerData', JSON.stringify(medications));
+    }
+
+    // Input enter key handling
+    document.getElementById('medicationName').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        addPill();
+      }
+    });
+  </script>
+</body>
+</html>
